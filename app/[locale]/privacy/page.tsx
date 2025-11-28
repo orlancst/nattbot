@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
+import { useTranslations } from "next-intl";
 
 export default function PrivacyPage() {
   return (

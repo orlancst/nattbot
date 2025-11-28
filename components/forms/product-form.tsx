@@ -12,6 +12,31 @@ export default function ProductForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+    phone?: string;
+    website?: string;
+  }>({});
+
+  const validateEmailFormat = (email: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
+  const validatePhone = (phone: string) => {
+    const regex = /^[0-9]+$/; // solo números
+    return regex.test(phone);
+  };
+
+  const validateWebsite = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const [formData, setFormData] = useState({
     // Step 1 - Basic Info
     companyName: "",
@@ -45,16 +70,82 @@ export default function ProductForm() {
   ) => {
     const { name, value, type } = e.target;
 
+    // Si es checkbox
     if (type === "checkbox") {
       setFormData((prev) => ({
         ...prev,
         [name]: (e.target as HTMLInputElement).checked,
       }));
-    } else {
+      return;
+    }
+
+    // ⬇️ Validación de campo TELÉFONO
+    if (name === "phone") {
+      // permitir solo números
+      const sanitized = value.replace(/[^0-9]/g, "");
+
       setFormData((prev) => ({
         ...prev,
-        [name]: value,
+        phone: sanitized,
       }));
+
+      // Validación visual en tiempo real
+      if (!sanitized) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          phone: "El teléfono es obligatorio",
+        }));
+      } else if (!validatePhone(sanitized)) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          phone: "Solo se permiten números",
+        }));
+      } else {
+        setFieldErrors((prev) => ({
+          ...prev,
+          phone: undefined,
+        }));
+      }
+
+      return; // importante
+    }
+
+    // Guardar el resto de valores normalmente
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // Validación específica para email
+    if (name === "email") {
+      if (!value) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          email: "El correo es obligatorio",
+        }));
+      } else if (!validateEmailFormat(value)) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          email: "Correo no válido",
+        }));
+      } else {
+        setFieldErrors((prev) => ({ ...prev, email: undefined }));
+      }
+    }
+
+    // Validación del sitio web (opcional)
+    if (name === "website") {
+      if (!value) {
+        // Si el campo está vacío → no hay error
+        setFieldErrors((prev) => ({ ...prev, website: undefined }));
+      } else if (!validateWebsite(value)) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          website: "La URL ingresada no es válida",
+        }));
+      } else {
+        setFieldErrors((prev) => ({ ...prev, website: undefined }));
+      }
     }
   };
 
@@ -76,6 +167,22 @@ export default function ProductForm() {
         setError("Por favor, completa todos los campos requeridos");
         return false;
       }
+
+      if (!validateEmailFormat(formData.email)) {
+        setError("Por favor, ingresa un correo válido");
+        return false;
+      }
+
+      if (!validatePhone(formData.phone)) {
+        setError("Ingresa un número de teléfono válido (solo números)");
+        return false;
+      }
+
+      if (formData.website && !validateWebsite(formData.website)) {
+        setError("El sitio web ingresado no es válido");
+        return false;
+      }
+
     } else if (step === 2) {
       if (!formData.businessDescription || !formData.targetAudience) {
         setError("Por favor, completa la descripción de tu negocio");
@@ -188,13 +295,23 @@ export default function ProductForm() {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="contacto@empresa.com"
-                  className="w-full px-4 py-2 rounded-lg bg-card border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                  className={`w-full px-4 py-2 rounded-lg bg-card border ${
+                    fieldErrors.email ? "border-red-500" : "border-border"
+                  } text-foreground placeholder-muted-foreground focus:outline-none 
+       ${fieldErrors.email ? "focus:border-red-500" : "focus:border-primary"}`}
                 />
+
+                {fieldErrors.email && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {fieldErrors.email}
+                  </p>
+                )}
               </div>
 
               <PhoneInput
                 formData={formData}
                 handleInputChange={handleInputChange}
+                fieldErrors={fieldErrors}
               />
 
               <div>
@@ -206,9 +323,21 @@ export default function ProductForm() {
                   name="website"
                   value={formData.website}
                   onChange={handleInputChange}
-                  placeholder="https://www.tuempresa.com"
-                  className="w-full px-4 py-2 rounded-lg bg-card border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
+                  placeholder="El sitio web debe comenzar por http:// o https://"
+                  className={`w-full px-4 py-2 rounded-lg bg-card border ${
+                    fieldErrors?.website ? "border-red-500" : "border-border"
+                  } text-foreground placeholder-muted-foreground focus:outline-none ${
+                    fieldErrors?.website
+                      ? "focus:border-red-500"
+                      : "focus:border-primary"
+                  }`}
                 />
+
+                {fieldErrors?.website && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {fieldErrors.website}
+                  </p>
+                )}
               </div>
             </div>
           </div>

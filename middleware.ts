@@ -1,13 +1,10 @@
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+import createMiddleware from "next-intl/middleware";
 
-export function middleware(request: NextRequest) {
-  // Aquí puedes agregar lógica de middleware si es necesario
-  // Por ejemplo, validación de CORS, rate limiting, etc.
-
-  return NextResponse.next()
-}
+export default createMiddleware({
+  locales: ["es", "en"],
+  defaultLocale: "es"
+});
 
 export const config = {
-  matcher: ["/api/:path*"],
-}
+  matcher: ["/((?!_next|.*\\..*|favicon.ico).*)"]
+};

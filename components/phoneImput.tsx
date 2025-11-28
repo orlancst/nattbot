@@ -2,13 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 
-  interface CountryCode {
-    name: string;
-    code: string;
-    dial_code: string;
-  }
+interface CountryCode {
+  name: string;
+  code: string;
+  dial_code: string;
+}
 
-  interface PhoneInputProps {
+interface PhoneInputProps {
   formData: {
     phoneCode: string;
     phone: string;
@@ -16,10 +16,16 @@ import React, { useEffect, useState } from "react";
   handleInputChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => void;
+  fieldErrors?: {
+    phone?: string;
+  };
 }
 
-export default function PhoneInput({ formData, handleInputChange, }: PhoneInputProps) {
-
+export default function PhoneInput({
+  formData,
+  handleInputChange,
+  fieldErrors,
+}: PhoneInputProps) {
   const [countryCodes, setCountryCodes] = useState<CountryCode[]>([]);
 
   useEffect(() => {
@@ -74,10 +80,18 @@ export default function PhoneInput({ formData, handleInputChange, }: PhoneInputP
           value={formData.phone}
           onChange={handleInputChange}
           placeholder="000 000 0000"
-          className="w-full px-4 py-2 rounded-lg bg-card border border-border 
-                     text-foreground placeholder-muted-foreground 
-                     focus:outline-none focus:border-primary"
+          className={`w-full px-4 py-2 rounded-lg bg-card border ${
+            fieldErrors?.phone ? "border-red-500" : "border-border"
+          } text-foreground placeholder-muted-foreground 
+    focus:outline-none ${
+      fieldErrors?.phone ? "focus:border-red-500" : "focus:border-primary"
+    }`}
+          maxLength={10}
         />
+
+        {fieldErrors?.phone && (
+          <p className="text-red-500 text-sm mt-1">{fieldErrors.phone}</p>
+        )}
       </div>
     </div>
   );
