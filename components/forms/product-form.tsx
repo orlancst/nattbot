@@ -1,20 +1,22 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import PhoneInput from "../phoneImput";
 
 export default function ProductForm() {
-  const router = useRouter()
-  const [step, setStep] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const router = useRouter();
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
     // Step 1 - Basic Info
     companyName: "",
     email: "",
+    phoneCode: "",
     phone: "",
     website: "",
 
@@ -26,6 +28,7 @@ export default function ProductForm() {
     hasServicePolicy: false,
     servicePolicyFile: null,
     acceptGDPR: false,
+    gdprFile: null,
 
     // Step 4 - Plan Selection
     selectedPlan: "basic",
@@ -33,75 +36,82 @@ export default function ProductForm() {
     // Step 5 - Inventory
     inventoryFile: null,
     productImages: null,
-  })
+  });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value, type } = e.target;
 
     if (type === "checkbox") {
       setFormData((prev) => ({
         ...prev,
         [name]: (e.target as HTMLInputElement).checked,
-      }))
+      }));
     } else {
       setFormData((prev) => ({
         ...prev,
         [name]: value,
-      }))
+      }));
     }
-  }
+  };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    fieldName: string
+  ) => {
     if (e.target.files?.[0]) {
       setFormData((prev) => ({
         ...prev,
         [fieldName]: e.target.files?.[0],
-      }))
+      }));
     }
-  }
+  };
 
   const validateStep = () => {
     if (step === 1) {
       if (!formData.companyName || !formData.email || !formData.phone) {
-        setError("Por favor, completa todos los campos requeridos")
-        return false
+        setError("Por favor, completa todos los campos requeridos");
+        return false;
       }
     } else if (step === 2) {
       if (!formData.businessDescription || !formData.targetAudience) {
-        setError("Por favor, completa la descripción de tu negocio")
-        return false
+        setError("Por favor, completa la descripción de tu negocio");
+        return false;
       }
     } else if (step === 3) {
       if (formData.hasServicePolicy && !formData.servicePolicyFile) {
-        setError("Por favor, carga tu política de servicio")
-        return false
+        setError("Por favor, carga tu política de servicio");
+        return false;
       }
-      if (!formData.acceptGDPR) {
-        setError("Debes aceptar el Habeas Data para continuar")
-        return false
+      if (formData.acceptGDPR && !formData.gdprFile) {
+        setError("Por favor, debes cargar el Habeas Data");
+        return false;
       }
     } else if (step === 5) {
       if (!formData.inventoryFile) {
-        setError("Por favor, carga tu inventario de productos")
-        return false
+        setError("Por favor, carga tu inventario de productos");
+        return false;
       }
     }
-    setError("")
-    return true
-  }
+    setError("");
+    return true;
+  };
 
   const handleNext = () => {
     if (validateStep()) {
-      setStep(step + 1)
+      setStep(step + 1);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!validateStep()) return
+    if (!validateStep()) return;
 
-    setLoading(true)
+    setLoading(true);
 
     try {
       // Aquí irá la lógica para enviar los datos al backend
@@ -110,19 +120,19 @@ export default function ProductForm() {
       // formDataObj.append('email', formData.email)
       // ... etc
 
-      console.log("Form submitted:", formData)
+      console.log("Form submitted:", formData);
 
       // Simulamos un envío exitoso
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Redirect o mostrar mensaje de éxito
-      router.push("/success")
+      router.push("/success");
     } catch (err) {
-      setError("Ocurrió un error al enviar el formulario")
+      setError("Ocurrió un error al enviar el formulario");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-8">
@@ -145,13 +155,19 @@ export default function ProductForm() {
         {step === 1 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Información Básica</h2>
-              <p className="text-muted-foreground">Cuéntanos sobre tu empresa</p>
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Información Básica
+              </h2>
+              <p className="text-muted-foreground">
+                Cuéntanos sobre tu empresa
+              </p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-2">Nombre de la Empresa *</label>
+                <label className="block text-sm font-semibold text-foreground mb-2">
+                  Nombre de la Empresa *
+                </label>
                 <input
                   type="text"
                   name="companyName"
@@ -163,7 +179,9 @@ export default function ProductForm() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-2">Correo Electrónico *</label>
+                <label className="block text-sm font-semibold text-foreground mb-2">
+                  Correo Electrónico *
+                </label>
                 <input
                   type="email"
                   name="email"
@@ -174,20 +192,15 @@ export default function ProductForm() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-2">Teléfono *</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="+1 (555) 000-0000"
-                  className="w-full px-4 py-2 rounded-lg bg-card border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
-                />
-              </div>
+              <PhoneInput
+                formData={formData}
+                handleInputChange={handleInputChange}
+              />
 
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-2">Sitio Web (opcional)</label>
+                <label className="block text-sm font-semibold text-foreground mb-2">
+                  Sitio Web (opcional)
+                </label>
                 <input
                   type="url"
                   name="website"
@@ -205,13 +218,19 @@ export default function ProductForm() {
         {step === 2 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Descripción del Negocio</h2>
-              <p className="text-muted-foreground">Cuéntanos más sobre tu empresa y productos</p>
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Descripción del Negocio
+              </h2>
+              <p className="text-muted-foreground">
+                Cuéntanos más sobre tu empresa y productos
+              </p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-2">Descripción de tu Negocio *</label>
+                <label className="block text-sm font-semibold text-foreground mb-2">
+                  Descripción de tu Negocio *
+                </label>
                 <textarea
                   name="businessDescription"
                   value={formData.businessDescription}
@@ -223,7 +242,9 @@ export default function ProductForm() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-2">Público Objetivo *</label>
+                <label className="block text-sm font-semibold text-foreground mb-2">
+                  Público Objetivo *
+                </label>
                 <textarea
                   name="targetAudience"
                   value={formData.targetAudience}
@@ -241,8 +262,12 @@ export default function ProductForm() {
         {step === 3 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Políticas y Cumplimiento</h2>
-              <p className="text-muted-foreground">Información sobre tus políticas y protección de datos</p>
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Políticas y Cumplimiento
+              </h2>
+              <p className="text-muted-foreground">
+                Información sobre tus políticas y protección de datos
+              </p>
             </div>
 
             <div className="space-y-4">
@@ -255,7 +280,10 @@ export default function ProductForm() {
                   onChange={handleInputChange}
                   className="w-5 h-5 rounded border-border bg-card cursor-pointer"
                 />
-                <label htmlFor="hasPolicy" className="text-foreground cursor-pointer">
+                <label
+                  htmlFor="hasPolicy"
+                  className="text-foreground cursor-pointer"
+                >
                   Tengo una política de servicio al cliente
                 </label>
               </div>
@@ -273,7 +301,10 @@ export default function ProductForm() {
                       className="hidden"
                       id="policyFile"
                     />
-                    <label htmlFor="policyFile" className="cursor-pointer block">
+                    <label
+                      htmlFor="policyFile"
+                      className="cursor-pointer block"
+                    >
                       <div className="text-2xl mb-2">📄</div>
                       <p className="text-muted-foreground">
                         {formData.servicePolicyFile
@@ -285,7 +316,49 @@ export default function ProductForm() {
                 </div>
               )}
 
-              <div className="border border-border rounded-lg p-4 bg-card/50">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="acceptGDPR"
+                  name="acceptGDPR"
+                  checked={formData.acceptGDPR}
+                  onChange={handleInputChange}
+                  className="w-5 h-5 rounded border-border bg-card cursor-pointer"
+                />
+                <label
+                  htmlFor="acceptGDPR"
+                  className="text-foreground cursor-pointer"
+                >
+                  Tengo la política de Habeas Data
+                </label>
+              </div>
+
+              {formData.acceptGDPR && (
+                <div>
+                  <label className="block text-sm font-semibold text-foreground mb-2">
+                    Carga tu Política de Habeas Data (PDF) *
+                  </label>
+                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition cursor-pointer">
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => handleFileChange(e, "gdprFile")}
+                      className="hidden"
+                      id="gdprFile"
+                    />
+                    <label htmlFor="gdprFile" className="cursor-pointer block">
+                      <div className="text-2xl mb-2">📄</div>
+                      <p className="text-muted-foreground">
+                        {formData.gdprFile
+                          ? formData.gdprFile.name
+                          : "Arrastra tu PDF aquí o haz clic para seleccionar"}
+                      </p>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {/* <div className="border border-border rounded-lg p-4 bg-card/50">
                 <div className="flex gap-3">
                   <input
                     type="checkbox"
@@ -297,13 +370,9 @@ export default function ProductForm() {
                   />
                   <label htmlFor="acceptGDPR" className="text-foreground cursor-pointer">
                     <span className="font-semibold">Acepto la política de Habeas Data</span>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Confirmo que he leído y acepto la protección de datos personales según la ley de protección de
-                      datos.
-                    </p>
                   </label>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         )}
@@ -312,15 +381,32 @@ export default function ProductForm() {
         {step === 4 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Selecciona tu Plan</h2>
-              <p className="text-muted-foreground">Elige el plan que mejor se adapte a tu negocio</p>
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Selecciona tu Plan
+              </h2>
+              <p className="text-muted-foreground">
+                Elige el plan que mejor se adapte a tu negocio
+              </p>
             </div>
 
             <div className="space-y-3">
               {[
-                { id: "free", name: "Gratuito", description: "10 productos, 100 conversaciones por mes" },
-                { id: "basic", name: "Básico", description: "Hasta 100 productos, conversaciones ilimitadas" },
-                { id: "custom", name: "Personalizado", description: "Inventario ilimitado, APIs de terceros" },
+                {
+                  id: "free",
+                  name: "Gratuito",
+                  description: "10 productos, 100 conversaciones por mes",
+                },
+                {
+                  id: "basic",
+                  name: "Básico",
+                  description:
+                    "Hasta 1000 productos, conversaciones ilimitadas",
+                },
+                {
+                  id: "custom",
+                  name: "Personalizado",
+                  description: "Inventario ilimitado, APIs de terceros",
+                },
               ].map((plan) => (
                 <label
                   key={plan.id}
@@ -339,8 +425,12 @@ export default function ProductForm() {
                     className="w-5 h-5 cursor-pointer"
                   />
                   <div className="ml-4">
-                    <div className="font-semibold text-foreground">{plan.name}</div>
-                    <div className="text-sm text-muted-foreground">{plan.description}</div>
+                    <div className="font-semibold text-foreground">
+                      {plan.name}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {plan.description}
+                    </div>
                   </div>
                 </label>
               ))}
@@ -352,8 +442,12 @@ export default function ProductForm() {
         {step === 5 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Carga tu Inventario</h2>
-              <p className="text-muted-foreground">Sube tu inventario de productos e imágenes</p>
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Carga tu Inventario
+              </h2>
+              <p className="text-muted-foreground">
+                Sube tu inventario de productos e imágenes
+              </p>
             </div>
 
             <div className="space-y-4">
@@ -361,6 +455,9 @@ export default function ProductForm() {
                 <label className="block text-sm font-semibold text-foreground mb-2">
                   Archivo de Inventario (CSV o Excel) *
                 </label>
+                <p className="text-sm">
+                  Utiliza el formato de plantillas de productos de WooCommerce.
+                </p>
                 <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition cursor-pointer">
                   <input
                     type="file"
@@ -369,7 +466,10 @@ export default function ProductForm() {
                     className="hidden"
                     id="inventoryFile"
                   />
-                  <label htmlFor="inventoryFile" className="cursor-pointer block">
+                  <label
+                    htmlFor="inventoryFile"
+                    className="cursor-pointer block"
+                  >
                     <div className="text-2xl mb-2">📊</div>
                     <p className="text-muted-foreground">
                       {formData.inventoryFile
@@ -377,7 +477,8 @@ export default function ProductForm() {
                         : "Arrastra tu archivo aquí o haz clic para seleccionar"}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Formato esperado: Nombre del producto, Precio, Unidades, Categoría
+                      Formato esperado: Nombre del producto, Precio, Unidades,
+                      Categoría
                     </p>
                   </label>
                 </div>
@@ -396,9 +497,14 @@ export default function ProductForm() {
                     className="hidden"
                     id="productImages"
                   />
-                  <label htmlFor="productImages" className="cursor-pointer block">
+                  <label
+                    htmlFor="productImages"
+                    className="cursor-pointer block"
+                  >
                     <div className="text-2xl mb-2">🖼️</div>
-                    <p className="text-muted-foreground">Arrastra imágenes aquí o haz clic para seleccionar</p>
+                    <p className="text-muted-foreground">
+                      Arrastra imágenes aquí o haz clic para seleccionar
+                    </p>
                   </label>
                 </div>
               </div>
@@ -447,5 +553,5 @@ export default function ProductForm() {
         </div>
       </form>
     </div>
-  )
+  );
 }
